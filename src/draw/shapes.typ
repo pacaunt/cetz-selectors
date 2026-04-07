@@ -58,7 +58,7 @@
 /// === Anchors
 ///   Supports border and path anchors. The `"center"` anchor is the default.
 ///
-#let circle(..points-style, name: none, anchor: none) = {
+#let circle(..points-style, name: none, anchor: none, class: none) = {
   let style = points-style.named()
   let points = points-style.pos()
   assert(points.len() in (1, 2),
@@ -74,6 +74,20 @@
     }
 
     let (ctx, center) = coordinate.resolve(ctx, center)
+
+    // Merge styles from name and class if given, the name style overrules the class style.
+    let style = style
+    let style-from-name = (:)
+    let style-from-class = (:)
+    if class != none {
+      style-from-class = styles.resolve(ctx.style, root: "class").at(class, default: (:))
+      style = styles.merge(style, style-from-class)
+    }
+    if name != none {
+      style-from-name = styles.resolve(ctx.style, root: "name").at(name, default: (:))
+      style = styles.merge(style, style-from-name)
+    }
+    style = styles.resolve(ctx.style, merge: style, root: "circle")
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
 
     // If we got two points, use the second one to calculate
